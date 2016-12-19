@@ -1,13 +1,16 @@
-FROM node:6.1.0-onbuild
+FROM node:6.9.2-alpine
 
-RUN mkdir -p /verdaccio/storage /verdaccio/conf
+LABEL name=verdaccio/verdaccio
+LABEL version=2.1.0
 
+RUN adduser -D -g "" verdaccio  \
+ && mkdir /verdaccio \
+ && chown -R verdaccio.verdaccio /verdaccio
+
+USER verdaccio
 WORKDIR /verdaccio
+COPY package.json /verdaccio/
+RUN npm install
+COPY . /verdaccio
 
-ADD conf/docker.yaml /verdaccio/conf/config.yaml
-
-EXPOSE 4873
-
-VOLUME ["/verdaccio/conf", "/verdaccio/storage"]
-
-CMD ["/usr/src/app/bin/verdaccio", "--config", "/verdaccio/conf/config.yaml", "--listen", "0.0.0.0:4873"]
+CMD ["./bin/verdaccio", "--config", "./conf/docker.yaml", "--listen", "0.0.0.0:4873"]
